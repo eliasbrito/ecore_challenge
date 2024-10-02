@@ -18,7 +18,7 @@ colunas = ["product_id", "year", "title"]  # Adapte ao número de colunas do seu
 df = df.toDF(*colunas)
 
 # Mostrar o DataFrame final
-df.show()
+#df.show()
 
 df.write.mode("overwrite").parquet(destinationParquet)
 # Encerrar a sessão Spark

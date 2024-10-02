@@ -1,4 +1,8 @@
 from pyspark.sql import SparkSession
+import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+import config
 
 # Criar a SparkSession
 spark = SparkSession.builder \
@@ -8,8 +12,8 @@ spark = SparkSession.builder \
     .getOrCreate()
 
 # Ler os arquivos Parquet em DataFrames
-df_filmes = spark.read.parquet("/Users/elias.brito/Documents/GIT_EliasPessoal/ecore_challenge/data_lake/silver/movies")
-df_avaliacoes = spark.read.parquet("/Users/elias.brito/Documents/GIT_EliasPessoal/ecore_challenge/data_lake/silver/rating")
+df_filmes = spark.read.parquet(config.LAKE_SILVER_PATH + "movies")
+df_avaliacoes = spark.read.parquet(config.LAKE_SILVER_PATH + "rating")
 #df_avaliacoes.show()
 # Registrar os DataFrames como tabelas temporárias
 df_filmes.createOrReplaceTempView("filmes")
@@ -53,46 +57,6 @@ print("Question 2 - Dos filmes disponíveis na Amazon, quantos por cento estão 
 df_resultado.show()
 
 # Question 3 - O quão perto a média das notas dos filmes disponíveis na Amazon está dos filmes disponíveis na Netflix?
-query = """
-SELECT 
-    SUM(media_netflix) AS media_netflix,
-    SUM(media_amazon) AS media_amazon,
-    (SUM(media_amazon) / SUM(media_netflix)) AS QUAOPERTO
-FROM(    
-SELECT 
-    avg(a.star_rating) as media_netflix,
-    0 as media_amazon,
-    a.company
-FROM 
-    filmes f
-    join avaliacoes a on
-        a.product_id = f.product_id    
-    and a.company = f.company
-WHERE
-    a.company = 'Netflix'   
-GROUP BY
-    a.company    
-UNION
-SELECT 
-    0 as media_netflix,
-    avg(a.star_rating) as media_amazon,
-    a.company
-FROM 
-    filmes f
-    join avaliacoes a on
-        a.product_id = f.product_id    
-    and a.company = f.company
-WHERE
-    a.company = 'Amazon'   
-GROUP BY
-    a.company  
-    )M
-"""
-# Executar a consulta SQL
-df_resultado = spark.sql(query)
-
-# Exibir o resultado do JOIN
-df_resultado.show()
 
 query = """
 SELECT 
@@ -339,21 +303,17 @@ SELECT
     f.title, 
     a.star_rating as avaliacao
 FROM 
-    filmes f
+    avaliacoes a
 JOIN 
-    avaliacoes a ON f.product_id = a.product_id
+    filmes f ON a.product_id = f.product_id
 WHERE 
-    a.star_rating >= 4
-AND f.company = 'Amazon'
-AND a.review_date = (
+    f.company = 'Amazon'
+    AND a.review_date = (
         SELECT MAX(a2.review_date)
         FROM avaliacoes a2
         JOIN filmes f2 ON a2.product_id = f2.product_id
         WHERE f2.company = 'Amazon'
     )
-GROUP BY 
-    f.title, 
-    a.star_rating
 ORDER BY 
     star_rating DESC, f.title ASC LIMIT 10;
 """
@@ -402,21 +362,17 @@ SELECT
     f.title, 
     a.star_rating as avaliacao
 FROM 
-    filmes f
+    avaliacoes a
 JOIN 
-    avaliacoes a ON f.product_id = a.product_id
+    filmes f ON a.product_id = f.product_id
 WHERE 
-    a.star_rating >= 4
-AND f.company = 'Netflix'
-AND a.review_date = (
+    f.company = 'Netflix'
+    AND a.review_date = (
         SELECT MAX(a2.review_date)
         FROM avaliacoes a2
         JOIN filmes f2 ON a2.product_id = f2.product_id
         WHERE f2.company = 'Netflix'
     )
-GROUP BY 
-    f.title, 
-    a.star_rating
 ORDER BY 
     star_rating DESC, f.title ASC LIMIT 10;
 """
@@ -424,7 +380,7 @@ ORDER BY
 # Executar a consulta SQL
 df_resultado = spark.sql(query)
 
-print("Question 10 - Quais os 10 filmes mais bem avaliados nesta data?")
+print("Question 12 - Quais os 10 filmes mais bem avaliados nesta data?")
 
 
 # Exibir o resultado do JOIN

@@ -13,7 +13,7 @@ spark = SparkSession.builder \
     .getOrCreate()
 
 sourceFilePath = config.LAKE_STG_PATH + "amazon/amazon_reviews_us_*.tsv"
-destinationParquet = config.LAKE_BRONZE_PATH + "bronze/rating_amazon/"
+destinationParquet = config.LAKE_BRONZE_PATH + "/rating_amazon/"
 
 df = spark.read.csv(sourceFilePath, header=True, sep="\t",  inferSchema=True)
 # Mostrar o DataFrame final

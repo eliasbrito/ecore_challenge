@@ -17,7 +17,7 @@ spark = SparkSession.builder \
 
 # Definir o padrão para encontrar os arquivos com sufixo _n
 sourceFilePattern = config.LAKE_STG_PATH +  "netflix/combined_data_*.txt"
-destinationParquet = config.LAKE_BRONZE_PATH + "bronze/rating_netflix/"
+destinationParquet = config.LAKE_BRONZE_PATH + "/rating_netflix/"
 
 # Usar glob para encontrar todos os arquivos que correspondem ao padrão
 files = glob.glob(sourceFilePattern)
@@ -37,6 +37,7 @@ schema = StructType([
 
 
 # Inicializar um DataFrame vazio com o esquema definido
+# Usando RDD Resilient Distributed Dataset 
 df_final = spark.createDataFrame(spark.sparkContext.emptyRDD(), schema)
 
 # Função para processar as linhas do arquivo
@@ -73,7 +74,7 @@ for arquivo in files:
 df_final = df_final.orderBy("product_id")  # Ajuste conforme necessário
 
 # Mostrar o DataFrame final
-df_final.show()
+#df_final.show()
 
 # Escrever o DataFrame em um arquivo Parquet
 df_final.write.mode("overwrite").parquet(destinationParquet)

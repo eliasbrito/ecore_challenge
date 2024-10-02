@@ -26,6 +26,6 @@ df_rating = df_rating_amazon.union(df_rating_netflix)
 
 df_rating.write.mode("overwrite").parquet(destinationParquet)
 
-df_rating.show()
+#df_rating.show()
 
 spark.stop()
