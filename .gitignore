@@ -7,7 +7,6 @@
 *.txt
 *.hcl
 *.0_x5
-*.tf
 *.tfstate
 *.backup
 data_lake/.DS_Store
